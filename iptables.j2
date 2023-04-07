@@ -1,0 +1,20 @@
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+
+# Allow traffic from established connections
+-A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+# Allow traffic from loopback interface
+-A INPUT -i lo -j ACCEPT
+
+# Allow traffic for specific services
+{% for port in iptables_allowed_ports %}
+-A INPUT -p tcp --dport {{ port }} -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+{% endfor %}
+
+# Drop all other incoming traffic
+-A INPUT -j DROP
+
+COMMIT

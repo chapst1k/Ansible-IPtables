@@ -1,0 +1,4 @@
+iptables_allowed_ports:
+  - 22
+  - 80
+  - 443

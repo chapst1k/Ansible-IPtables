@@ -1,0 +1,44 @@
+---
+- name: Configure iptables on CentOS 7
+  hosts: centos7_servers   # Can Also Change This name and in inventory file
+  become: yes
+  gather_facts: yes
+  tasks:
+    - name: Ensure iptables is installed
+      yum:
+        name: iptables-services
+        state: present
+
+    - name: Disable firewalld
+      systemd:
+        name: firewalld
+        state: stopped
+        enabled: no
+
+    - name: Enable and start iptables
+      systemd:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      loop:
+        - iptables
+        - ip6tables
+
+    - name: Create iptables rules file
+      template:
+        src: iptables.j2
+        dest: /etc/sysconfig/iptables
+        owner: root
+        group: root
+        mode: 0644
+      notify:
+        - reload iptables
+
+  handlers:
+    - name: reload iptables
+      systemd:
+        name: "{{ item }}"
+        state: reloaded
+      loop:
+        - iptables
+        - ip6tables
